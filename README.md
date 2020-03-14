@@ -2,6 +2,8 @@
 
 Build in unity editor icons browser - explore all them icons within the editor itself ! 
 
+Buy me a beer (૭ ◉༬◉)૭⁾⁾⁾⁾ [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/wad1m)
+
 ## Installation
 
 Drop the file `EditorIcons.cs` file anywhere in your project  
