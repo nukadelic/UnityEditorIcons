@@ -1,9 +1,10 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 public class EditorIcons : EditorWindow
 {
@@ -50,6 +51,39 @@ public class EditorIcons : EditorWindow
         if (!string.IsNullOrEmpty(icon_name)) valid = EditorGUIUtility.IconContent(icon_name);
         Debug.unityLogger.logEnabled = true;
         return valid?.image == null ? null : valid;
+    }
+
+    void SaveIcon( string icon_name )
+    {
+        Texture2D tex = EditorGUIUtility.IconContent(icon_name).image as Texture2D;
+
+        if (tex != null)
+        {
+            string path = EditorUtility.SaveFilePanel(
+                "Save icon", "", icon_name, "png");
+
+            if (path != null)
+            {
+                try
+                {
+                    Texture2D outTex = new Texture2D(
+                        tex.width, tex.height,
+                        tex.format, tex.mipmapCount, true);
+
+                    Graphics.CopyTexture(tex, outTex);
+
+                    File.WriteAllBytes(path, outTex.EncodeToPNG());
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError("Cannot save the icon : " + e.Message);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("Cannot save the icon : null texture error!");
+        }
     }
 
     private void OnEnable()
@@ -212,6 +246,8 @@ public class EditorIcons : EditorWindow
                 GUILayout.Space(5);
                 if(GUILayout.Button("Copy to clipboard",EditorStyles.miniButton))
                     EditorGUIUtility.systemCopyBuffer = iconSelected.tooltip;
+                if(GUILayout.Button("Save icon to file ...",EditorStyles.miniButton))
+                    SaveIcon(iconSelected.tooltip);
             }
 
             GUILayout.Space(10);
