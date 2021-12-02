@@ -1,6 +1,6 @@
 {
     "name": "EditorIcons",
-    "rootNamespace": "Halak.EditorIcons",
+    "rootNamespace": "Nukadelic.EditorIcons",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

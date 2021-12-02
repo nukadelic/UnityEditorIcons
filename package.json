@@ -1,12 +1,12 @@
 {
-    "name": "com.halak.unity-editor-icons",
+    "name": "com.nukadelic.unity-editor-icons",
     "version": "1.0.0",
     "displayName": "Unity Editor Icons",
     "description": "Allows you to browse the Unity Editor icons.",
     "unity": "2020.3",
     "hideInEditor": true,
     "author": {
-        "name": "halak",
-        "url": "https://github.com/halak"
+        "name": "nukadelic",
+        "url": "https://github.com/nukadelic"
     }
 }

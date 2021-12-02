@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
-namespace Halak.EditorIcons
+namespace Nukadelic.EditorIcons
 {
     public class EditorIcons : EditorWindow
     {
