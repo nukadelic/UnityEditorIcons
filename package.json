@@ -1,0 +1,12 @@
+{
+    "name": "com.nukadelic.unity-editor-icons",
+    "version": "1.0.2",
+    "displayName": "Unity Editor Icons",
+    "description": "Allows you to browse the Unity Editor icons.",
+    "unity": "2020.3",
+    "hideInEditor": true,
+    "author": {
+        "name": "nukadelic",
+        "url": "https://github.com/nukadelic"
+    }
+}
