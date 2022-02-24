@@ -61,10 +61,9 @@ namespace Nukadelic.EditorIcons
 
             if (tex != null)
             {
-                string path = EditorUtility.SaveFilePanel(
-                    "Save icon", "", icon_name, "png");
+                string path = EditorUtility.SaveFilePanel("Save icon", Application.dataPath, icon_name, "png");
 
-                if (path != null)
+                if (!string.IsNullOrWhiteSpace(path))
                 {
                     try
                     {
