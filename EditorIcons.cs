@@ -11,7 +11,11 @@ public class EditorIcons : EditorWindow
     [MenuItem("Tools/Editor Icons %e", priority = -1001)]
     public static void EditorIconsOpen()
     {
+#if UNITY_2018
+        var w = GetWindow<EditorIcons>("Editor Icons");
+#else
         var w = CreateWindow<EditorIcons>("Editor Icons");
+#endif
         w.ShowUtility();
         w.minSize = new Vector2(320, 450);
     }
@@ -32,7 +36,11 @@ public class EditorIcons : EditorWindow
         {
             if (isWide) GUILayout.Space(10);
 
+#if UNITY_2018
+            search = EditorGUILayout.TextField(search, EditorStyles.toolbarTextField);
+#else
             search = EditorGUILayout.TextField(search, EditorStyles.toolbarSearchField);
+#endif
             if ( GUILayout.Button(EditorGUIUtility.IconContent("winbtn_mac_close_h"), //SVN_DeletedLocal
                 EditorStyles.toolbarButton, 
                 GUILayout.Width(22))
@@ -66,9 +74,15 @@ public class EditorIcons : EditorWindow
             {
                 try
                 {
+#if UNITY_2018
+                    Texture2D outTex = new Texture2D(
+                        tex.width, tex.height,
+                        tex.format, true);
+#else
                     Texture2D outTex = new Texture2D(
                         tex.width, tex.height,
                         tex.format, tex.mipmapCount, true);
+#endif
 
                     Graphics.CopyTexture(tex, outTex);
 
