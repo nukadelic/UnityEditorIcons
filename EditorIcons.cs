@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 
+using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -99,6 +100,54 @@ public class EditorIcons : EditorWindow
             Debug.LogError("Cannot save the icon : null texture error!");
         }
     }
+    
+    void SaveAllIcons()
+    {
+        var folderpath = EditorUtility.SaveFolderPanel("", "", "");
+        try
+        {
+            foreach (string icon in ico_list)
+            {
+                var split = icon.Split('/').Last();
+                Texture2D tex = EditorGUIUtility.IconContent(icon).image as Texture2D;
+
+                if (tex == null) continue;
+                if (string.IsNullOrWhiteSpace(folderpath))
+                {
+                    Debug.LogError("Folder path invalid...");
+                    break;
+                }
+                    
+                var path = folderpath + "//" + $"{split}.png";
+
+                if (File.Exists(path))
+                {
+                    Debug.Log($"file already written with name aborting write: {path}");
+                }
+                else
+                {
+#if UNITY_2018
+                    Texture2D outTex = new Texture2D(
+                        tex.width, tex.height,
+                        tex.format, true);
+#else
+                    Texture2D outTex = new Texture2D(
+                        tex.width, tex.height,
+                        tex.format, tex.mipmapCount, true);
+#endif
+
+                    Graphics.CopyTexture(tex, outTex);
+                        
+                        
+                    File.WriteAllBytes(path, outTex.EncodeToPNG());
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Cannot save the icons: " + e.Message);
+        }
+    }
 
     private void OnEnable()
     {
@@ -159,6 +208,7 @@ public class EditorIcons : EditorWindow
 
         using ( new GUILayout.HorizontalScope( EditorStyles.toolbar ) )
         {
+            if(GUILayout.Button("Save all icons to folder...",EditorStyles.miniButton)) SaveAllIcons();
             GUILayout.Label("Select what icons to show", GUILayout.Width( 160 ));
             viewBigIcons = GUILayout.SelectionGrid(
               viewBigIcons ? 1 : 0, new string[] { "Small", "Big" }, 
