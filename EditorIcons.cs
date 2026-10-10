@@ -1,11 +1,11 @@
 ﻿#if UNITY_EDITOR
 
 using System;
-using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 public class EditorIcons : EditorWindow
 {
@@ -189,7 +189,16 @@ public class EditorIcons : EditorWindow
         //Debug.Log($"totals , list: {all_icons.Length} resource: {found.Count}");
         //Debug.Log($"Unique list={ unique_to_list } resources={unique_to_resources}") ;
 
-        ico_list = ico_list.ToList().Concat(unique).ToArray();
+        ico_list = ico_list.Concat(unique)
+                           .Distinct(StringComparer.Ordinal)
+                           .OrderBy(x => x)  // light and dark icon order is not stable, sort 2 times
+                           .OrderBy(x =>     // not ThenBy
+                            {
+                                if (x.StartsWith("d_", StringComparison.Ordinal))
+                                    return x.Substring(2);
+                                return x;
+                            })
+                            .ToArray();
 
         // Static list icons count : 1315 ( unique = 749 )
         // Found icons in resources : 1416 ( unique = 855 )
@@ -279,42 +288,89 @@ public class EditorIcons : EditorWindow
 
         using (new GUILayout.HorizontalScope( EditorStyles.helpBox, GUILayout.MaxHeight(viewBigIcons ? 140 : 120 ) ) )
         {
-            using( new GUILayout.VerticalScope( GUILayout.Width( 130 ) ) )
+            using (new GUILayout.VerticalScope(GUILayout.Width(128)))
             {
-                GUILayout.Space(2);
+                GUILayout.Button(iconSelected,
+                    iconPreviewBlack,
+                    GUILayout.Width(128), GUILayout.Height(viewBigIcons ? 128 : 128/*40*/));
 
-                GUILayout.Button(iconSelected, 
-                    darkPreview? iconPreviewBlack:iconPreviewWhite, 
-                    GUILayout.Width(128), GUILayout.Height( viewBigIcons ? 128 : 40 ));
-                
-                GUILayout.Space(5);
-                
-                darkPreview = GUILayout.SelectionGrid(
-                  darkPreview ? 1 : 0, new string[] { "Light", "Dark" },
-                  2, EditorStyles.miniButton) == 1;
+                GUILayout.Button(iconSelected,
+                    iconPreviewWhite,
+                    GUILayout.Width(128), GUILayout.Height(viewBigIcons ? 128 : 128/*40*/));
 
                 GUILayout.FlexibleSpace();
             }
-
-            GUILayout.Space(10);
 
             using (new GUILayout.VerticalScope())
             {
                 var s = $"Size: {iconSelected.image.width}x{iconSelected.image.height}";
                 s += "\nIs Pro Skin Icon: " + ( iconSelected.tooltip.IndexOf("d_") == 0 ? "Yes" : "No" );
                 s += $"\nTotal {iconContentListAll.Count} icons";
-                GUILayout.Space(5);
-                EditorGUILayout.HelpBox(s,MessageType.None);
+
+                EditorGUILayout.HelpBox(s, MessageType.None);
                 GUILayout.Space(5);
                 EditorGUILayout.TextField("EditorGUIUtility.IconContent(\"" + iconSelected.tooltip + "\")");
                 GUILayout.Space(5);
-                if(GUILayout.Button("Copy to clipboard",EditorStyles.miniButton))
+
+                if (GUILayout.Button("Copy to clipboard", EditorStyles.miniButton))
                     EditorGUIUtility.systemCopyBuffer = iconSelected.tooltip;
                 if(GUILayout.Button("Save icon to file ...",EditorStyles.miniButton))
                     SaveIcon(iconSelected.tooltip);
-            }
 
-            GUILayout.Space(10);
+
+                // USS for Unity Editor
+                var ussName = iconSelected.tooltip;
+                int isDark = 0;
+                if (ico_list.Contains("d_" + ussName))
+                {
+                    isDark = 1;
+                }
+                else if (ussName.StartsWith("d_", StringComparison.Ordinal))
+                {
+                    if (ico_list.Contains(ussName.Substring(2)))
+                    {
+                        ussName = ussName.Substring(2);
+                        isDark = 1;
+                    }
+                }
+                var iconFileName = ussName;
+                // remove redundant 'icon'
+                if (ussName.EndsWith("icon", StringComparison.OrdinalIgnoreCase))
+                    ussName = ussName[..^4];
+                if (ussName.StartsWith("icon", StringComparison.OrdinalIgnoreCase))
+                    ussName = ussName[4..];
+                var trimChars = new char[] { '-', '_', ' ', '.' };
+                foreach (var trim in trimChars)
+                {
+                    int pos;
+                    while (true)
+                    {
+                        pos = ussName.IndexOf(trim + "icon", StringComparison.OrdinalIgnoreCase);
+                        if (pos < 0)
+                            break;
+
+                        ussName = ussName[..pos] + ussName[(pos + 5)..];
+                    }
+                }
+                ussName = ussName.Trim(trimChars);
+
+                ussName = ".editor--"
+                    + ussName.Replace(' ', '-').Replace('.', '-').Replace('@', '-').ToLowerInvariant() + "--icon";
+                // always export both light and dark
+                var uss = string.Empty;
+                while (isDark-- >= 0)
+                {
+                    uss += $@"{ussName} {{
+    background-image: resource('{iconFileName}');
+    -unity-background-scale-mode: scale-to-fit;
+}}
+"
+                        ;
+                    iconFileName = "d_" + iconFileName;
+                    ussName += "-dark";
+                }
+                EditorGUILayout.TextField(uss, GUILayout.ExpandHeight(true));
+            }
 
             if (GUILayout.Button( "X", GUILayout.ExpandHeight(true)))
             {
